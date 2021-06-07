@@ -1,0 +1,92 @@
+Authenticated encryption with associated data (AEAD) is a relatively recent concept in symmetric key cryptography where a cipher aims  at providing confidenciality as well as autheneticity.
+
+Aegis-128:
+
+Given a message (plaintext) and associated data, Aegis-128 encrypts the plaintext and generate a tag depending on both the plaintext and associated data(authentication ) .
+
+The sender (Alice ) generates the ciphertext and the tag , and sends them along with the associated data via an insecure channel ( where the attacker Eve is active ) to the recepient ( Bob ).  Upon receiving the ciphertext and tag Bob generates  the tag  again . if both the current and received tag matches, then plaintext is generated . It means , the received ciphertext and associated data are not disturbed by attacker Eve . Otherewise Bob learns there is a disturbance caused by Eve , generate an invalid signal and discards the entire data received . For transmission of plaintext both confidenciality and authenticity is required, where only authenticity is required for associated data.
+
+
+Fault attacks :  Active attacks against cryptographic implementations. Fault attacks can be perfomed on Software or Hardwared implementation of the cipher . A fault cause errors and an errors can be exploited to expose secret. 
+
+When a ciphertext (encrypted palintext) is transmitted through insecure channel, Attacker get the ciphertext and by introducing  faults in cipheretxt , he can analyse faulty and fault free cipher text to retrieve the secret key .Then attacker  easily decrypt the meassage.  This is called fault attack. These fault  attacks are also used to test the  strength of ciphers and analyse how much the message is secure in channel. There are many Side channel attacks, such as timming attack which  can be performed by attacker using  timing analysis, power attack using power analysis .
+
+
+Biham and Shamir  first introduced the idea of Differential Fault Analysis (DFA). Security of symmetric ciphers can be analyzed using DFA attacks . During run time of cipher algorithms, faults can be injected in a choosen round of algorithm  (at any chosen cycle of operation of the cipher.) . For example in case of AES, A single bit fault flips the value of the corresponding bit and with subsequent rounds of algorithm  faults propagated to the entire state matrix(128 bit).Then attacker can use the  difference between faulty and fault free cipher text.
+
+ AES is  vulnerable to fault attacks.
+
+fault : fault means we are changing a single bit(single bit fault ) or byte(8 bit)(single byte fault ) of state matrix for ex. we can change a single bit of state matrix at 6th round aes, due to avalanch effect original cipher text c1 will be change to c2.
+
+now differential fault analysis == c1 xor c2 ,  goal of attacker is to find out the key K by analysing c1 and c2
+c1 -> fault free cypher text
+c2 -> faulty cypher text
+
+
+In this paper Dey et al has mentioned a fault attack on Aegis-128:
+Here, The attacker has control on the fault timing and fault location. 
+
+The final output generate a faulty ciphertext . By examinig the differences between the correct and a faulty ciphertext attacker recover the secret key and then easily recover the entire state of Aegis-128L with practical complexity.
+
+Let, the fault inserted be "e" and  in bit flipping "e" is fixed.  e = 111...1 (128 bit) and initialization vectore(IV) or nonce is fixed at all round which means nonce is reused.
+
+In cryptography, a "nonce" is an arbitrary number that can be used just once for a single algorithmic run in a cryptographic communication.
+Differential Fault Attack only possible when nonce is reused in case of authenticated encryption (AEAD), if generated nonce is unique in every round of the algorithm then By fault attack, the attacker can never retrieve the key.  Like, if time value used as nonce then Fault attack is impossible. Also from the designer perspective nonce should be used only once.
+
+Differential fault analyses of  AEGIS family of ciphers in a nonce reuse setting.
+
+
+
+
+Attack on AEGIS-128:
+
+Let us consider two consecutive ciphertext generation rounds i and i + 1.  The state of the cipher at these rounds are given by :
+Si = Si,0||Si,1||Si,2||Si,3||Si,4,
+Si+1 = Si+1,0||Si+1,1||Si+1,2||Si+1,3||Si+1,
+
+Under our attack model both the 16-byte block keystreams zi and zi+1 will be available to the attacker. the corresponding 16-byte keystreams are given by:
+zi =   Si,1 ⊕ Si,4 ⊕ ( Si,2 & Si,3 )
+zi+1 =   Si+1,1 ⊕ Si+1,4 ⊕ ( Si+1,2 & Si+1,3 ).
+
+by injecting 128 faults to Si,2, it is possible to recover the entire Si,3 block.
+
+zi   =   Si,1 ⊕ Si,4 ⊕ (  Si,2  &  Si,3 )
+zi'  =   Si,1 ⊕ Si,4 ⊕  (( Si,2  ⊕ e ) & Si,3)       , [here, fault = e = 111...11 (128 bit ) ]
+zi'  =   Si,1 ⊕ Si,4 ⊕ ( Si,2 & Si,3 ) ⊕ ( e & Si,3 )
+
+zi   ⊕ zi'  =   (  e  &  Si,3  )
+
+by injecting 128 faults to Si,3, it is possible to recover the entire Si,2 block.
+
+zi   =   Si,1 ⊕ Si,4 ⊕ (  Si,2  &  Si,3 )
+zi'  =   Si,1 ⊕ Si,4 ⊕  (   Si,2   & ( Si,3  ⊕ e ) )       , [here, fault = e = 111...11 (128 bit ) ]
+zi'  =   Si,1 ⊕ Si,4 ⊕ ( Si,2 & Si,3 ) ⊕ ( e & Si,2 )
+
+zi   ⊕ zi'  =   (  e  &  Si,2  )
+
+by injecting 128 faults to Si+1,3  , it is possible to recover the entire Si+1,2 block.
+
+zi+1   =   Si+1,1 ⊕ Si+1,4 ⊕ (  Si+1,2  &  Si+1,3 )
+zi+1'  =   Si+1,1 ⊕ Si+1,4 ⊕  (   Si+1,2   & ( Si+1,3  ⊕ e ) )       , [here, fault = e = 111...11 (128 bit ) ]
+zi+1'  =   Si+1,1 ⊕ Si+1,4 ⊕ ( Si+1,2 & Si+1,3 ) ⊕ ( e & Si+1,2 )
+
+zi+1   ⊕  zi+1'  =   (  e  &  Si+1,2  )
+
+*** By injecting 3 × 128 single bit faults to Si,3, Si,2 and Si+1,3 one respectively recovers the blocks Si,2, Si,3 and Si+1,2.
+ 
+(  τ  =  one round of AES  )
+Now  Si+1,2  =  τ (Si,1) ⊕ Si,2.  Since Si+1,2 and Si,2 are both known.  -> recover Si,1 .
+
+from, zi  =   Si,1 ⊕ Si,4 ⊕ (  Si,2  &  Si,3)   ->  recover Si,4 .
+
+At this moment Si,1, Si,2, Si,3 , Si,4 and   Si+1,2 are known.
+
+ Si+1,3  =  τ (Si,2) ⊕ Si,3  and   Si+1,4  = τ (Si,3) ⊕ Si,4.  ->  obtain Si+1,3 and   Si+1,4.
+
+Now consider ,   zi+1 =  Si+1,1 ⊕ Si+1,4 ⊕ (  Si+1,2  &  Si+1,3 )  ->  recover Si+1,1
+
+Finally,    Si+1,1  = τ (Si,0) ⊕ Si,1   -> recover  Si,0
+
+Thus with  3×128 faults, we have obtain the state Si = Si,0||Si,1||Si,2||Si,3||Si,4 at the i-th round.
+
+

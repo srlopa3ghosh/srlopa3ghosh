@@ -1,0 +1,35 @@
+Aegis-128L Random Fault Attack:
+
+Like , Bit Flipping fault attack, Random fault attack also comes under Differencial fault attack. By using random fault attack , an attacker can able to retrieve the  key from ciphertext.  The purpose of fault attack is to retrieve key and with the key attacker can easily access decrypted massage, which lead to unauthorised access of data. 
+
+Differential Fault Attack (DFA) is a most popular FA technique to attack Symmetric block cipher. Attacker Injects fault in ciphertext in  a chosen round of the algorithm to get the desired fault propagation at the end of encryption. The secret key can then be examinig the differences between the correct and a faulty ciphertext. This attack recover the entire state of Aegis-128L with practical complexity.
+
+ Random fault model is more practical that bit flipping fault model. 
+Let, the fault inserted be "e" and  in bit flipping "e" is fixed.  e = 111...1 (128 bit) and initialization vectore(IV) or nonce is fixed at all round which means nonce is reused.
+But , in Random fault attack the fault "e" is not fixed at all round. The inserted fault e can be any 128-bit value. And here also, IV or nonce  is reused.
+if , e= 11111...(128bit)   -> in bit flipping fault attack
+then, e= 00000...(128bit) - 1111.....(127bit)0 (2^128-1)  ->  in random fault attack, where probability of each bit is (1/(2^128))
+
+
+Here, multiple ciphertexts computed over the same key and initialization vector(IV). This falls under the nonce-reuse scenario.
+ In cryptography, a "nonce" is an arbitrary number that can be used just once in a cryptographic communication.
+Differential Fault Attack only possible when nonce is reused, if generated nonce is unique in every round of the algorithm then By fault attack, the attacker can never retrieve the key.  Like, if time value used as nonce then Fault attack is impossible.
+ 
+In Aegis-128L , the DFA can be performed in two different scenario, which depend on how much information is available to the attacker. 
+
+Both plaintext and ciphertext can be known to the Attacker -> which called "Known Plaintext Attack" or KPA. 
+ Here, many pairs of plaintext(p) and its respective ciphertext(c) are known to attacker -> (p1,c1)(p2,c2)(p3,c3)......(p,c)  under the same Key. Goal is to compute some function of the underlying plaintext in a new cipher-text.  example of this attack is linear cryptanalysis against block ciphers.
+
+Only ciphertext can be known to the Attacker -> which called "Ciphertext Only Attack" or COA .  
+This attack is passive in nature .  COA is said to be successful when the corresponding plaintext can be determined from a given set of ciphertext. Occasionally, the encryption key can be determined from this attack. Goal to compute some function of underlying plaintext. Like,  Cryptographers developed statistical techniques for attacking ciphertext, such as frequency analysis.
+ 
+                  information Available     Fault Model      No. of Faulty Ciphertexts    Complexity       
+ Aegis-       1.Known Plaintext           Random                         20                                2^36
+128L                                                    Bit Flipping                    4                                    1
+
+                  2. Ciphertext Only           Random                          56                                2^32
+                                                           Bit Flipping                     8                                    1
+
+
+
+
